@@ -14,15 +14,18 @@ const productSchema=new mongoose.Schema({
         required:true
     },
     soldBy:{
-        type:mongoose.Schema.ObjectId,
+        type:mongoose.Schema.Types.Mixed,
         ref:"customer",
         required: [true, "product must belong to some user"]
     },
-    ratings:[
-        {
+    Rating:{
+        totalRatings:{
+            type:Number
+        },
+        avgRating:{
             type:Number
         }
-    ]
+    }
 })
 
 module.exports=new mongoose.model('product',productSchema)

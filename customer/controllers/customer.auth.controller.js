@@ -25,14 +25,14 @@ const login=async(req,res)=>{
             secure:true
         })
 
-        res.status(200).json({
+        return res.status(200).json({
             "status":"success",
             "msg":"customer logged in successfully",
             "customer":existingCustomer,
             "token":token
         })
     }catch(err){
-        res.status(500).json({
+        return res.status(500).json({
             "status":"internal server error",
             "msg":err.message
         })
@@ -42,12 +42,12 @@ const login=async(req,res)=>{
 const logout=(req,res)=>{
     try{
         res.clearCookie('jwt')
-        res.status(200).json({
+        return res.status(200).json({
             "status":"success",
             "msg":"customer logged out",
         })
     }catch(err){
-        res.status(500).json({
+        return res.status(500).json({
             "status":"internal server error",
             "msg":err.message
         })
@@ -73,14 +73,14 @@ const signup=async(req,res)=>{
             secure:true
         })
 
-        res.status(200).json({
+        return res.status(200).json({
             "status":"success",
             "msg":"customer creater successfully",
             "customer":saveCustomer,
             "token":token
         })
     }catch(err){
-        res.status(500).json({
+        return res.status(500).json({
             "status":"internal server error",
             "msg":err.message
         })

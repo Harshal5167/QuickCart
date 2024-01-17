@@ -1,9 +1,8 @@
 const express = require('express');
 const router=require('./routes/product.routes')
-const amqp=require('amqplib')
 const cookieParser=require('cookie-parser')
-require('./config/db.config')
-require('./messageBroker/product.msgBroker')
+require('./config/db.config.js')
+require('./config/rabbitmq.config.js')
 const dotenv=require('dotenv')
 dotenv.config()
 
