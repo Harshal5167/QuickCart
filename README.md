@@ -5,11 +5,11 @@ Build with nodejs microservices architecture for different services and connecte
 
 ### Tech Stack
 
-Node.Js
-Express.Js
-MongoDB
-RabbitMQ
-Docker
+Node.Js  
+Express.Js  
+MongoDB  
+RabbitMQ  
+Docker  
 
 ## !!Still in Progress!!
 
