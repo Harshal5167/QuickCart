@@ -1,11 +1,17 @@
 const productModel=require('../model/product.model')
 const config=require('../config/rabbitmq.config')
+const {uploadFile}=require('../../middleware/s3.middleware')
+const fs=require('fs')
+const util=require('util')
+const unlinkFile= util.promisify(fs.unlink)
+const dotenv=require('dotenv')
+dotenv.config()
 
 let customer
-const createProduct=async(req,res)=>{
+const sellProduct=async(req,res)=>{
     try{
-        const {name,description,cost}=req.body
-        const verify=req.body.verify
+        const {name,category,description,cost}=req.body
+        const verify=req.verify
 
         const channel=await config.getChannel()
 
@@ -24,6 +30,8 @@ const createProduct=async(req,res)=>{
             avgRating:0
         }
         if(!customer){
+            await unlinkFile(req.file.path)
+
             return res.status(500).json({
                 "status":"internal server error",
                 "msg":"error while fetching data from other service. Please try again"
@@ -35,9 +43,29 @@ const createProduct=async(req,res)=>{
             "email":customer.email,
             "phone":customer.phone
         }
+
+        let imageURL
+        if(req.file){
+            const file=req.file
+
+            if(req.fileValidationError){
+                return res.status(400).json({
+                    "status":"error",
+                    "msg":req.fileValidationError
+                })
+            }
+            await uploadFile(file)
+            imageURL=`https://${process.env.BUCKET_NAME}.s3.${process.env.REGION}.amazonaws.com/${file.filename}`
+
+            const unlinkFile= util.promisify(fs.unlink)
+            await unlinkFile(file.path)
+        }
+        
         const newProduct=new productModel({
             name,
+            category,
             description,
+            imageURL,
             cost,
             soldBy,
             Rating
@@ -53,8 +81,8 @@ const createProduct=async(req,res)=>{
             "msg":"product created successfully",
             "product":saveProduct
         })
-        
     }catch(err){
+        console.log(err);
         return res.status(500).json({
             "status":"internal server error",
             "msg":err.message
@@ -71,6 +99,7 @@ const getProducts=async(req,res)=>{
                 "name":product.name,
                 "description":product.description,
                 "cost":product.cost,
+                "imageURL":product.imageURL,
                 "soldBy":{
                     "username":product.soldBy.username,
                     "email":product.soldBy.email,
@@ -96,7 +125,6 @@ const rateProduct=async (req,res)=>{
     try{
         const product=await productModel.findById(req.params.id)
         const rating =req.body.rating
-
         if(rating<1 || rating>5){
             return res.status(400).json({
                 "status":"error",
@@ -131,8 +159,41 @@ const rateProduct=async (req,res)=>{
     }
 }
 
+const getProductsByCategory=async(req,res)=>{
+    try{
+        const category=req.params.category
+
+        const products=await productModel.find({category}).limit(10)
+        const productsByCategory=products.map((product)=>{
+            const toShow={
+                "name":product.name,
+                "description":product.description,
+                "cost":product.cost,
+                "imageURL":product.imageURL,
+                "soldBy":{
+                    "username":product.soldBy.username,
+                    "email":product.soldBy.email,
+                    "phone":product.soldBy.phone
+                }
+            }
+            return toShow
+        })
+
+        return res.status(200).json({
+            "status":"success",
+            "products":productsByCategory
+        })
+    }catch(err){
+        return res.status(500).json({
+            "status":"internal server error",
+            "msg":err.message
+        })
+    }
+}
+
 module.exports={
-    createProduct,
+    sellProduct,
     getProducts,
-    rateProduct
+    rateProduct,
+    getProductsByCategory
 }

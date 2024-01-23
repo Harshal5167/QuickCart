@@ -4,7 +4,7 @@ const getChannel=require('../config/rabbitmq.config')
 let ProductsListedWithBody
 const getProfile=async(req,res)=>{
     try{
-        const verify=req.body.verify
+        const verify=req.verify
         const customer=await customerModel.findById(verify._id,{
             username:1,
             email:1,

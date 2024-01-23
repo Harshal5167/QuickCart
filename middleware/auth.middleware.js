@@ -1,8 +1,6 @@
 const jwt=require('jsonwebtoken')
-const dotenv=require('dotenv')
-dotenv.config()
 
-const isAuthenticated=async(req,res,next)=>{
+const isAuthenticated=(req,res,next)=>{
     const token=req.cookies.jwt;
     if(!token){
         return res.status(401).json({
@@ -12,7 +10,7 @@ const isAuthenticated=async(req,res,next)=>{
     }
 
     const verify= jwt.verify(token,process.env.SECRET_KEY)
-    req.body.verify=verify
+    req.verify=verify
     
     next()
 }

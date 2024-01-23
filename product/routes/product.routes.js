@@ -1,14 +1,17 @@
 const express = require('express');
 const isAuthenticated=require('../../middleware/auth.middleware')
+const upload=require('../../middleware/multer.middleware')
 const {
-    createProduct,
+    sellProduct,
     getProducts,
-    rateProduct
+    rateProduct,
+    getProductsByCategory
 }=require('../controllers/product.controller')
 const router=express.Router()
 
-router.post('/create',[isAuthenticated],createProduct)
+router.post('/sell',[isAuthenticated,upload.single('image')],sellProduct)
 router.get('/',[isAuthenticated],getProducts)
 router.post('/rate/:id',[isAuthenticated],rateProduct)
+router.get('/:category',[isAuthenticated],getProductsByCategory)
 
 module.exports=router

@@ -1,6 +1,7 @@
 const express = require('express');
 const router=require('./routes/product.routes')
 const cookieParser=require('cookie-parser')
+const bodyParser = require('body-parser')
 require('./config/db.config.js')
 require('./config/rabbitmq.config.js')
 const dotenv=require('dotenv')
@@ -11,6 +12,7 @@ const app=express()
 
 app.use(cookieParser())
 app.use(express.json())
+app.use(bodyParser.json())
 
 app.use('/api/product/',router)
 app.get('*',(req,res)=>{
