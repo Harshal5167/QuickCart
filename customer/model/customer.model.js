@@ -5,11 +5,14 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config()
 
+const addressModel = require("./address.model")
+
 const customerSchema=new mongoose.Schema({
     username:{
         type:String,
         required:[true, "username is required"],
-        unique:[true,"username is already in use. use a new one"]
+        unique:[true, "username already registered."],
+        minlength:[3, "username should be of atleast 3 charcters"]
     },
     password:{
         type:String,
@@ -19,6 +22,7 @@ const customerSchema=new mongoose.Schema({
     email:{
         type:String,
         required:[true, "email is required"],
+        unique:[true, "email already registered."],
         validate(value){
             if(!validator.isEmail(value)){
                 throw new Error("not a valid email address")
@@ -26,17 +30,29 @@ const customerSchema=new mongoose.Schema({
         }
     },
     phone:{
-        type:String,
+        type:Number,
         required:[true, "phone number is required"],
-        minlength:[10, "phone number should contain atleast 10 digits"],
-        maxlength:[10, "phone number should contain atmax 10 digits"]
+        unique:[true, "phone number already registered"],
+        validate:{
+            validator: function(value) {
+                return /^[0-9]{10}$/.test(value);
+            },
+            message: "not a valid phone number"
+        }
     },
     productsListed:[
         {
             type:mongoose.Schema.ObjectId,
             ref:"product"
         }
-    ]
+    ],
+    name:{
+        type:String,
+    },
+    userAddress: {
+        type:Object,
+        ref:addressModel
+    }
 })
 
 //to hash the password given by customer
@@ -68,7 +84,7 @@ customerSchema.methods.cmpPassword=async function(password){
 customerSchema.methods.generateToken=async function(){
     try{
         const token=await jwt.sign({_id:this.id},process.env.SECRET_KEY,{
-            expiresIn:'1d'
+            expiresIn:'10d'
         })
         return token
     }catch{

@@ -15,7 +15,7 @@ app.use(cookieParser())
 
 app.use('/api/customer/auth',authRouter)
 app.use('/api/customer/',router)
-app.get('*',(req,res)=>{
+app.use('*',(req,res)=>{
     res.status(404).json({
         status:"error",
         msg:"page not found"

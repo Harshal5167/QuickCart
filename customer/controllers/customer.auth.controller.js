@@ -1,64 +1,65 @@
 const customerModel = require('../model/customer.model');
+const addressModel = require("../model/address.model")
 
-const login=async(req,res)=>{
-    try{
-        const {username,password}=req.body
+const login = async (req, res) => {
+    try {
+        const { username, password, name } = req.body
 
-        const existingCustomer=await customerModel.find({username})
-        if(!existingCustomer){
+        const existingCustomer = await customerModel.find({ username })
+        if (!existingCustomer) {
             return res.status(401).json({
-                "status":"error",
-                "msg":"username is not registered"
+                "status": "error",
+                "msg": "username is not registered"
             })
         }
 
-        const isSamePassword= await existingCustomer[0].cmpPassword(password)
-        if(!isSamePassword){
+        const isSamePassword = await existingCustomer[0].cmpPassword(password)
+        if (!isSamePassword) {
             return res.status(401).json({
-                "status":"error",
-                "msg":"password not matched"
+                "status": "error",
+                "msg": "password not matched"
             })
         }
-        const token=await existingCustomer[0].generateToken()
-        res.cookie('jwt',token,{
-            httpOnly:true,
-            secure:true
+        const token = await existingCustomer[0].generateToken()
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure: true
         })
 
         return res.status(200).json({
-            "status":"success",
-            "msg":"customer logged in successfully",
-            "customer":existingCustomer,
-            "token":token
+            "status": "success",
+            "msg": "customer logged in successfully",
+            "customer": existingCustomer,
+            "token": token
         })
-    }catch(err){
+    } catch (err) {
         return res.status(500).json({
-            "status":"internal server error",
-            "msg":err.message
+            "status": "internal server error",
+            "msg": err.message
         })
     }
 }
 
-const logout=(req,res)=>{
-    try{
+const logout = (req, res) => {
+    try {
         res.clearCookie('jwt')
         return res.status(200).json({
-            "status":"success",
-            "msg":"customer logged out",
+            "status": "success",
+            "msg": "customer logged out",
         })
-    }catch(err){
+    } catch (err) {
         return res.status(500).json({
-            "status":"internal server error",
-            "msg":err.message
+            "status": "internal server error",
+            "msg": err.message
         })
     }
 }
 
-const signup=async(req,res)=>{
-    try{
-        const {username,email,password,phone}=req.body
+const signup = async (req, res) => {
+    try {
+        const { username, email, password, phone } = req.body
 
-        const newCustomer=new customerModel({
+        const newCustomer = new customerModel({
             username,
             email,
             password,
@@ -66,29 +67,67 @@ const signup=async(req,res)=>{
         })
         await newCustomer.hashPassword()
 
-        const saveCustomer=await newCustomer.save()
-        const token=await saveCustomer.generateToken()
-        res.cookie('jwt',token,{
-            httpOnly:true,
-            secure:true
+        const saveCustomer = await newCustomer.save()
+        const token = await saveCustomer.generateToken()
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            secure: true
         })
 
         return res.status(200).json({
-            "status":"success",
-            "msg":"customer creater successfully",
-            "customer":saveCustomer,
-            "token":token
+            "status": "success",
+            "msg": "customer created successfully",
+            "customer": saveCustomer,
+            "token": token
         })
-    }catch(err){
+    } catch (err) {
         return res.status(500).json({
-            "status":"internal server error",
-            "msg":err.message
+            "status": "internal server error",
+            "msg": err.message
         })
     }
 }
 
-module.exports={
+const completeUserProfile = async (req, res) => {
+    try {
+        const { name, houseNo, pinCode, addressLine, city, country } = req.body;
+
+        const verify = req.verify;
+
+        const address = new addressModel({
+            houseNo,
+            pinCode,
+            addressLine,
+            city,
+            country
+        })
+
+        const saveAddress = await address.save();
+
+        const updatedCustomer = await customerModel.findByIdAndUpdate(verify._id, {
+            $set: {
+                name: name,
+                userAddress: saveAddress
+            }
+        }, { new: true });
+
+        return res.status(200).json({
+            "status": "success",
+            "msg": "user profile completed successfully",
+            "customer": updatedCustomer,
+            "token": token
+        })
+    } catch (err) {
+        return res.status(500).json({
+            "status": "internal server error",
+            "msg": err.message
+        })
+    }
+}
+
+module.exports = {
     login,
     logout,
-    signup
+    signup,
+    completeUserProfile
 }
