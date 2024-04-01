@@ -3,24 +3,25 @@ const addressModel = require("../model/address.model")
 
 const login = async (req, res) => {
     try {
-        const { username, password, name } = req.body
+        const { username, password } = req.body
 
-        const existingCustomer = await customerModel.find({ username })
+        const existingCustomer = await customerModel.findOne({ username })
         if (!existingCustomer) {
             return res.status(401).json({
                 "status": "error",
-                "msg": "username is not registered"
+                "msg": "username is not registered !",
+                "renderTo": "RegisterScreen"
             })
         }
 
-        const isSamePassword = await existingCustomer[0].cmpPassword(password)
+        const isSamePassword = await existingCustomer.cmpPassword(password)
         if (!isSamePassword) {
             return res.status(401).json({
                 "status": "error",
-                "msg": "password not matched"
+                "msg": "password not matched !"
             })
         }
-        const token = await existingCustomer[0].generateToken()
+        const token = await existingCustomer.generateToken()
         res.cookie('jwt', token, {
             httpOnly: true,
             secure: true
