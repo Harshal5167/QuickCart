@@ -1,27 +1,27 @@
 const express = require('express');
-const router=require('./routes/product.routes')
-const cookieParser=require('cookie-parser')
+const router = require('./routes/product.routes')
+const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
 require('./config/db.config.js')
 require('./config/rabbitmq.config.js')
-const dotenv=require('dotenv')
+const dotenv = require('dotenv')
 dotenv.config()
 
-const port=process.env.PORT || 6001
-const app=express()
+const port = process.env.PORT || 6001
+const app = express()
 
 app.use(cookieParser())
 app.use(express.json())
 app.use(bodyParser.json())
 
-app.use('/api/product/',router)
-app.get('*',(req,res)=>{
+app.use('/api/product/', router)
+app.use('*', (req, res) => {
     res.status(404).json({
-        status:"error",
-        msg:"page not found"
+        status: "error",
+        msg: "page not found"
     })
 })
 
-app.listen(port,()=>{
+app.listen(port, () => {
     console.log(`Connected at port ${port}`);
 })
